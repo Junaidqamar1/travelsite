@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Places Map</title>
+    <style>
+        /* Add some basic styling */
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .img img{
+          width: 100px;
+          height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <input id="autocomplete" placeholder="Search for places" type="text" />
+    <button onclick="globalSearch()">Search Globally</button>
+    <div id="map" style="height: 400px;"></div>
+    <div id="places-list"></div>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA5Tmy0ZgTfvuKJtYwRdHG0i_sNVJYecM&libraries=places,geometry&v=beta"
+      defer
+    ></script>
+    <script src="next.js"></script>
+    <script src="data.js"></script>
+    <!-- <script src="global.js"></script> -->
+
+</body>
+</html>
