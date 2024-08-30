@@ -27,14 +27,20 @@
             max-height: 100px;
             border-radius: 8px;
         }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
     <input id="autocomplete" type="text" placeholder="Search for places...">
-    <button onclick="globalSearch()">Search</button>
+    <input id="category" type="text" placeholder="Enter category (e.g., beaches)">
+    <button onclick="searchByCategory()">Search</button>
     <div id="map"></div>
-    <div id="places-list"></div>
+    <div id="places-list" class="loading">Loading places...</div>
 
     <script>
         let map;
@@ -99,30 +105,28 @@
                     latitude = position.coords.latitude;
                     longitude = position.coords.longitude;
                     console.log("Latitude:", latitude, "Longitude:", longitude);
-
-                    // Initialize the map and autocomplete after getting the location
                     initMap();
                     initAutocomplete();
                 },
                 function (error) {
                     console.error("Error getting location:", error);
+                    document.getElementById('places-list').innerText = 'Unable to retrieve your location.';
                 }
             );
         } else {
             console.error("Geolocation is not supported by this browser.");
+            document.getElementById('places-list').innerText = 'Geolocation is not supported by this browser.';
         }
 
         function initMap() {
             if (latitude !== undefined && longitude !== undefined) {
                 const location = { lat: latitude, lng: longitude };
 
-                // Create a map centered at the given location
                 map = new google.maps.Map(document.getElementById('map'), {
                     center: location,
                     zoom: 14
                 });
 
-                // Fetch and display nearby Google Places and custom database places
                 fetchNearbyPlaces(location);
                 displayCustomPlaces();
             } else {
@@ -141,11 +145,8 @@
                     return;
                 }
 
-                // Center the map on the selected place
                 map.setCenter(place.geometry.location);
                 map.setZoom(14);
-
-                // Fetch and display nearby Google Places based on the selected location
                 fetchNearbyPlaces(place.geometry.location);
             });
         }
@@ -170,68 +171,101 @@
 
         function displayCustomPlaces() {
             const placesList = document.getElementById('places-list');
+            placesList.innerHTML = ''; // Clear loading text
+
             for (const category in customDatabase) {
                 customDatabase[category].forEach(city => {
                     city.places.forEach(place => {
-                        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-                            new google.maps.LatLng(latitude, longitude),
-                            new google.maps.LatLng(place.latitude, place.longitude)
-                        ) / 1000; // Distance in kilometers
+                        if (google.maps.geometry && google.maps.geometry.spherical) {
+                            const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                                new google.maps.LatLng(latitude, longitude),
+                                new google.maps.LatLng(place.latitude, place.longitude)
+                            ) / 1000;
 
-                        const listItem = document.createElement('div');
-                        listItem.innerHTML = `
-                            <div class="container">
-                                <div class="info">
-                                    <h3>${place.name}</h3>
-                                    <p>${place.description}</p>
-                                    <p>Distance: ${distance.toFixed(2)} km</p>
+                            const listItem = document.createElement('div');
+                            listItem.innerHTML = `
+                                <div class="container">
+                                    <div class="info">
+                                        <h3>${place.name}</h3>
+                                        <p>${place.description}</p>
+                                        <p>Distance: ${distance.toFixed(2)} km</p>
+                                    </div>
+                                    <div class="img">
+                                        <img src="https://via.placeholder.com/200" alt="${place.name}">
+                                    </div>
                                 </div>
-                                <div class="img">
-                                    <img src="https://via.placeholder.com/200" alt="${place.name}">
-                                </div>
-                            </div>
-                        `;
+                            `;
 
-                        placesList.appendChild(listItem);
+                            placesList.appendChild(listItem);
 
-                        // Add a marker for each custom place on the map
-                        const marker = new google.maps.Marker({
-                            position: { lat: place.latitude, lng: place.longitude },
-                            map: map,
-                            title: place.name
-                        });
+                            const marker = new google.maps.Marker({
+                                position: { lat: place.latitude, lng: place.longitude },
+                                map: map,
+                                title: place.name
+                            });
+                        } else {
+                            console.error('Google Maps Geometry library not loaded.');
+                        }
                     });
                 });
             }
         }
 
-        function globalSearch() {
-            const searchTerm = document.getElementById('autocomplete').value;
-            const service = new google.maps.places.PlacesService(map);
+        function searchByCategory() {
+            const category = document.getElementById('category').value.toLowerCase();
+            const placesList = document.getElementById('places-list');
+            placesList.innerHTML = ''; // Clear loading text
 
-            const request = {
-                query: searchTerm,
-                fields: ['name', 'geometry', 'photos', 'formatted_address'],
-            };
+            if (customDatabase[category]) {
+                customDatabase[category].forEach(city => {
+                    city.places.forEach(place => {
+                        if (google.maps.geometry && google.maps.geometry.spherical) {
+                            const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                                new google.maps.LatLng(latitude, longitude),
+                                new google.maps.LatLng(place.latitude, place.longitude)
+                            ) / 1000;
 
-            service.textSearch(request, function (results, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    displayGlobalPlaces(results);
-                    map.setCenter(results[0].geometry.location);
-                } else {
-                    console.error('PlacesService was not successful for the following reason:', status);
-                }
-            });
+                            const listItem = document.createElement('div');
+                            listItem.innerHTML = `
+                                <div class="container">
+                                    <div class="info">
+                                        <h3>${place.name}</h3>
+                                        <p>${place.description}</p>
+                                        <p>Distance: ${distance.toFixed(2)} km</p>
+                                    </div>
+                                    <div class="img">
+                                        <img src="https://via.placeholder.com/200" alt="${place.name}">
+                                    </div>
+                                </div>
+                            `;
+
+                            placesList.appendChild(listItem);
+
+                            const marker = new google.maps.Marker({
+                                position: { lat: place.latitude, lng: place.longitude },
+                                map: map,
+                                title: place.name
+                            });
+                        } else {
+                            console.error('Google Maps Geometry library not loaded.');
+                        }
+                    });
+                });
+            } else {
+                placesList.innerHTML = 'No results found for this category.';
+            }
         }
 
         function displayPlaces(places) {
             const placesList = document.getElementById('places-list');
+            placesList.innerHTML = ''; // Clear loading text
+
             places.forEach(place => {
                 const photoUrl = place.photos && place.photos.length > 0 ? place.photos[0].getUrl({ maxWidth: 200, maxHeight: 200 }) : 'https://via.placeholder.com/200';
-                const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                const distance = google.maps.geometry && google.maps.geometry.spherical ? google.maps.geometry.spherical.computeDistanceBetween(
                     new google.maps.LatLng(latitude, longitude),
                     place.geometry.location
-                ) / 1000; // Distance in kilometers
+                ) / 1000 : 0;
 
                 const listItem = document.createElement('div');
                 listItem.innerHTML = `
@@ -249,43 +283,6 @@
 
                 placesList.appendChild(listItem);
 
-                // Add a marker for each Google Place on the map
-                const marker = new google.maps.Marker({
-                    position: place.geometry.location,
-                    map: map,
-                    title: place.name
-                });
-            });
-        }
-
-        function displayGlobalPlaces(places) {
-            const placesList = document.getElementById('places-list');
-            placesList.innerHTML = '';
-
-            places.forEach(place => {
-                const photoUrl = place.photos && place.photos.length > 0 ? place.photos[0].getUrl({ maxWidth: 200, maxHeight: 200 }) : 'https://via.placeholder.com/200';
-                const distance = google.maps.geometry.spherical.computeDistanceBetween(
-                    new google.maps.LatLng(latitude, longitude),
-                    place.geometry.location
-                ) / 1000;
-
-                const listItem = document.createElement('div');
-                listItem.innerHTML = `
-                    <div class="container">
-                        <div class="info">
-                            <h3>${place.name}</h3>
-                            <p>${place.formatted_address}</p>
-                            <p>Distance: ${distance.toFixed(2)} km</p>
-                        </div>
-                        <div class="img">
-                            <img src="${photoUrl}" alt="${place.name}">
-                        </div>
-                    </div>
-                `;
-
-                placesList.appendChild(listItem);
-
-                // Add a marker for each Global Place on the map
                 const marker = new google.maps.Marker({
                     position: place.geometry.location,
                     map: map,
@@ -297,4 +294,3 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA5Tmy0ZgTfvuKJtYwRdHG0i_sNVJYecM&libraries=places"></script>
 </body>
 </html>
-
