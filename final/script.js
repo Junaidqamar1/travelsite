@@ -6,6 +6,46 @@ let autocomplete;
 let customDatabase = {};
 let costompic ;
 
+const AVG_TRAVEL_COST_PER_KM = 10; // e.g., $0.5 per km
+const AVG_HOTEL_COST_PER_NIGHT = 6000; // Average cost per night in $
+const AVG_FOOD_COST_PER_DAY = 2000; // Average daily food cost in $
+
+
+function calculateBudget(distance) {
+    // const travelCost = distance * AVG_TRAVEL_COST_PER_KM;
+    
+    if (distance<100){
+        const hotelCost = 0; // Assuming 1 night for simplicity
+        const foodCost = 0; // Assuming 1 day for simplicity
+        const travelCost = distance * 15;
+        const total=  travelCost + hotelCost + foodCost
+        return {
+            total:`₹${Math.floor(total)}`,
+            travelCost: travelCost,
+            hotelCost: hotelCost,
+            foodCost: foodCost
+        };
+    }else{
+        const hotelCost = AVG_HOTEL_COST_PER_NIGHT; // Assuming 1 night for simplicity
+        const foodCost = AVG_FOOD_COST_PER_DAY; // Assuming 1 day for simplicity
+        const travelCost = distance * AVG_TRAVEL_COST_PER_KM;
+        let total= travelCost + hotelCost + foodCost
+        if(Math.floor(total)>1000){
+            total= Math.floor(total);
+            total=total/1000;
+            console.log(total)
+        }
+
+        return {
+            total: `₹${total.toFixed(1)}k`,
+            travelCost: travelCost,
+            hotelCost: hotelCost,
+            foodCost: foodCost
+        };
+    }
+
+}
+
 // Load the custom database from multiple JSON files
 function loadDatabases() {
     const databaseUrls = ['DataBase/beaches.json', 'DataBase/mountains.json'];
@@ -167,24 +207,30 @@ function displayCustomPlaces() {
                         new google.maps.LatLng(place.latitude, place.longitude)
                     ) / 1000; // Distance in kilometers    
                 
+                const budget = calculateBudget(distance);
 
                 const listItem = document.createElement('div');
                 listItem.innerHTML = `
                     <div class="container">
+                        <div class="img">
+                            <img src="${photoUrl}" alt="${place.name}">
+                        </div>
                         <div class="info">
                             <h3>${place.name}</h3>
                              <p>${place.exact_location}</p>
                             <p>${place.description}</p>
-                            <p>${place.exact_location}</p>
                             <p>Distance: ${distance.toFixed(2)} km</p>
                         </div>
-                        <div class="img">
-                            <img src="${photoUrl}" alt="${place.name}">
+                        <div class="price">
+                            <h3>BUDGET</h3>
+                            <p>FOR SINGLE/DOUBLE PERSON:</p>
+                            <span>${budget.total}</span>
                         </div>
                     </div>
                 `;
-
+                    
                 placesList.appendChild(listItem);
+                
 
                 // Add a marker for each custom place on the map
                 const marker = new google.maps.Marker({
@@ -283,17 +329,24 @@ function displayCustomCategoryPlaces(category) {
                     new google.maps.LatLng(place.latitude, place.longitude)
                 ) / 1000; // Distance in kilometers
 
+                const budget = calculateBudget(distance);
+
                 const listItem = document.createElement('div');
                 listItem.innerHTML = `
                     <div class="container">
+                        <div class="img">
+                            <img src="${photoUrl}" alt="${place.name}">
+                        </div>
                         <div class="info">
                             <h3>${place.name}</h3>
                             <p>${place.exact_location}</p>
                             <p>${place.description}</p>
                             <p>Distance: ${distance.toFixed(2)} km</p>
                         </div>
-                        <div class="img">
-                            <img src="${photoUrl}" alt="${place.name}">
+                        <div class="price">
+                            <h3>BUDGET</h3>
+                            <p>FOR SINGLE/DOUBLE PERSON:</p>
+                            <span>${budget.total}</span>
                         </div>
                     </div>
                 `;
@@ -320,17 +373,24 @@ function displayPlaces(places) {
             place.geometry.location
         ) / 1000; // Distance in kilometers
 
+        const budget = calculateBudget(distance);
+
         const listItem = document.createElement('div');
         listItem.innerHTML = `
             <div class="container">
+                <div class="img">
+                    <img src="${photoUrl}" alt="${place.name}">
+                </div>
                 <div class="info">
                     <h3>${place.name}</h3>
                      <p>${place.exact_location}</p>
                     <p>${place.vicinity}</p>
                     <p>Distance: ${distance.toFixed(2)} km</p>
                 </div>
-                <div class="img">
-                    <img src="${photoUrl}" alt="${place.name}">
+                <div class="price">
+                    <h3>BUDGET</h3>
+                    <p>FOR SINGLE/DOUBLE PERSON:</p>
+                    <span>${budget.total}</span>
                 </div>
             </div>
         `;
@@ -356,18 +416,25 @@ function displayGlobalPlaces(places) {
             new google.maps.LatLng(latitude, longitude),
             place.geometry.location
         ) / 1000;
+        const budget = calculateBudget(distance);
+
 
         const listItem = document.createElement('div');
         listItem.innerHTML = `
             <div class="container">
+                <div class="img">
+                    <img src="${photoUrl}" alt="${place.name}">
+                </div>
                 <div class="info">
                     <h3>${place.name}</h3>
                      <p>${place.exact_location}</p>
                     <p>${place.formatted_address}</p>
                     <p>Distance: ${distance.toFixed(2)} km</p>
                 </div>
-                <div class="img">
-                    <img src="${photoUrl}" alt="${place.name}">
+                <div class="price">
+                    <h3>BUDGET</h3>
+                    <p>FOR SINGLE/DOUBLE PERSON:</p>
+                    <span>${budget.total}</span>
                 </div>
             </div>
         `;

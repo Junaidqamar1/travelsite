@@ -65,20 +65,26 @@
     background-color:  #B85042;
     border-radius: 20px;
     /* flex-direction: row-reverse; */
-    justify-content: space-between;
+    
     padding: 10px;
     /* box-shadow: 2px 2px 40px rgb(65, 65, 65); */
 }
 .info {
-    flex: 1;
+    /* flex: 1; */
     color: antiquewhite;
     margin: 10px;
+    text-align: center;
+    width: 50%;
 }
 .info p{
     font-style:italic;
 }
 .info h3{
     font-size: 28px;
+  
+}
+.img{
+    width: 25%;
 }
 .img img {
     max-width: 200px;
@@ -116,6 +122,25 @@
     border-radius: 20px;
     margin: 5px;
 }
-.card h3{
 
+.price{
+    width: 25%;
+    background-color: #E7E8D1;
+    color:#B85042;
+    text-align:center;
+    /* font-style: ; */
+    height: 90%;
+    border-radius: 10px;
+    font-size: xx-large;
+}
+.price p{
+    width: 100%;
+    font-size: small;
+    margin: 5px;
+}
+.price span{
+    color: black;
+    font-size: 45px;
+margin: 10px;
+text-align: center;
 }
